@@ -3,7 +3,7 @@ package com.exampleGroup.demo.model;
 import lombok.Data;
 
 @Data
-public class Signature {
+public class LicenseSignature {
 
     private String publicKey;
     private String curve;

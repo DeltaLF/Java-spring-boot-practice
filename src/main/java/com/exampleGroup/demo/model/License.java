@@ -11,5 +11,5 @@ public class License {
     private Map<String, Object> info;
     private List<Map<String, Object>> lists;
     private String expired;
-    private Signature signature;
+    private LicenseSignature LicenseSignature;
 }
