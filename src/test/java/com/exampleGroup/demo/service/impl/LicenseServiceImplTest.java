@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -17,14 +20,16 @@ import com.exampleGroup.demo.service.LicenseService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@SpringBootTest
+@TestPropertySource(locations = "classpath:application.properties")
 public class LicenseServiceImplTest {
+    @Autowired
     private LicenseService licenseService;
     private PublicKey publicKey;
     private PrivateKey privateKey;
 
     @BeforeEach
     void setUp(){
-        licenseService = new LicenseServiceImpl();
         KeyPair keyPair = licenseService.generateECKeyPair();
         this.publicKey = keyPair.getPublic();
         this.privateKey = keyPair.getPrivate();

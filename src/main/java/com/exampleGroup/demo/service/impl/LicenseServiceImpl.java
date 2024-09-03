@@ -6,18 +6,32 @@ import com.exampleGroup.demo.service.LicenseService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.annotation.PostConstruct;
+
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.security.*;
 import java.security.spec.*;
 import java.util.Base64;
 
 @Service
+@Component
 public class LicenseServiceImpl implements LicenseService{
+    @Value("${spring.application.name}")
+    private String appName;
+
+    @PostConstruct
+    private void init() {
+        // appName is accessible here
+    }
+
 
     private static ObjectMapper objectMapper = new ObjectMapper();
     @Override
     public boolean isValidLicense(License license) {
+        // appName is accessible here
         try{
             byte[] publicKeyBytes = Base64.getDecoder().decode(license.getLicenseSignature().getPublicKey());
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
