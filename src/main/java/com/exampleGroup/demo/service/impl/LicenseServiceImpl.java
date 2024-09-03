@@ -22,10 +22,9 @@ public class LicenseServiceImpl implements LicenseService{
     @Value("${spring.application.name}")
     private String appName;
 
-      @PostConstruct
+    @PostConstruct
     private void init() {
         // appName is accessible here
-        System.out.println("### con"+appName);
     }
 
 
