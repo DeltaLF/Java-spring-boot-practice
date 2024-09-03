@@ -1,7 +1,11 @@
 package com.exampleGroup.demo.service.impl;
 
 import com.exampleGroup.demo.model.License;
+import com.exampleGroup.demo.model.LicenseSignature;
 import com.exampleGroup.demo.service.LicenseService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.stereotype.Service;
 
 import java.security.*;
@@ -11,6 +15,7 @@ import java.util.Base64;
 @Service
 public class LicenseServiceImpl implements LicenseService{
 
+    private static ObjectMapper objectMapper = new ObjectMapper();
     @Override
     public boolean isValidLicense(License license) {
         try{
@@ -23,14 +28,22 @@ public class LicenseServiceImpl implements LicenseService{
             Signature signature = Signature.getInstance("SHA256withECDSA");
             signature.initVerify(publicKey);
 
-            // Get the data to verify (e.g., combine fields like name, info, lists, expired)
-            String dataToVerify = license.getName() + license.getExpired();
+            LicenseSignature licenseSignature = license.getLicenseSignature();
+            license.setLicenseSignature(null);
+            String dataToVerify;
+            try{
+                dataToVerify = objectMapper.writeValueAsString(license);
+
+            }catch (JsonProcessingException e){
+                System.err.println("Error: License json is invalid - " + e.getMessage());
+                return false;
+            }
             // Add more fields as necessary
             byte[] dataBytes = dataToVerify.getBytes();
             signature.update(dataBytes);
 
             // Decode the signature bytes
-            byte[] signatureBytes = Base64.getDecoder().decode(license.getLicenseSignature().getBytes());
+            byte[] signatureBytes = Base64.getDecoder().decode(licenseSignature.getBytes());
 
             // Verify the signature
             return signature.verify(signatureBytes);
@@ -47,11 +60,6 @@ public class LicenseServiceImpl implements LicenseService{
             KeyPair keyPair = g.generateKeyPair();
             g.initialize(ecSpec, new SecureRandom());
             return keyPair;
-            // PublicKey publicKey = keyPair.getPublic();
-            // // String encodedPublicKey = Base64.getEncoder().encodeToString(publicKey.getEncoded());
-            // PrivateKey privateKey = keyPair.getPrivate();
-            // // String encodedPrivateKey = Base64.getEncoder().encodeToString(privateKey.getEncoded());
-            // return new ECKeyPair(publicKey, privateKey);
         }catch(NoSuchAlgorithmException | java.security.InvalidAlgorithmParameterException e){
             e.printStackTrace();
             return null;
@@ -62,7 +70,7 @@ public class LicenseServiceImpl implements LicenseService{
         try{
             Signature signature = Signature.getInstance("SHA256withECDSA");
             signature.initSign(privateKey);
-            signature.update(payload.getBytes());
+            signature.update(payload.getBytes("UTF-8"));
             byte[] signatureBytes = signature.sign();
             return Base64.getEncoder().encodeToString(signatureBytes);
         } catch (NoSuchAlgorithmException e) {

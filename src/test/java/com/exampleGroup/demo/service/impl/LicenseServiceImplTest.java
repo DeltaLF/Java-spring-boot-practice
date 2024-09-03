@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.cglib.core.Signature;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -41,6 +40,8 @@ public class LicenseServiceImplTest {
     @Test
     void testInValidLicense(){
         License license = this.createLicenseWithSignature();
+        // modify license to make it invalid
+        license.setExpired("Never");
         boolean isValid = licenseService.isValidLicense(license);
         assertFalse(isValid, "Test for invalid license");
     }
@@ -50,23 +51,18 @@ public class LicenseServiceImplTest {
         LicenseSignature signature = new LicenseSignature();
         String encodedPublicKey = Base64.getEncoder().encodeToString(publicKey.getEncoded());
         signature.setPublicKey(encodedPublicKey);
-        // TODO: replace byte to a valid byte
-        String base64Encoded = "U29tZSBiaW5hcnkgZGF0YSB0byBkZWNvZGU=";
-        signature.setBytes(base64Encoded);
         return signature;
     }
-    private License createLicense(LicenseSignature signature){
+    private License createLicense(){
         License license = new License();
         license.setName("Test license");
         license.setExpired("2025-12-31");
-        // Signature signature = new Signature();
-        license.setLicenseSignature(signature);
         return license;
     }
     private License createLicenseWithSignature(){
         try{
         LicenseSignature signature = this.createSignature(false);
-        License license = this.createLicense(null);
+        License license = this.createLicense();
         String jsonPayloadStr = objectMapper.writeValueAsString(license);
         String signedByte = this.licenseService.signLicense(this.privateKey, jsonPayloadStr);
         signature.setBytes(signedByte);
